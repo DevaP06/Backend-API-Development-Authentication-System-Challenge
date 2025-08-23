@@ -1,0 +1,36 @@
+{
+  "name": "backend-challenge",
+  "version": "1.0.0",
+  "description": "gdg challenge",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon  -r dotenv/config --experimental-json-modules src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DevaP06/Backend-API-Development-Authentication-System-Challenge.git"
+  },
+  "author": "devashish",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/DevaP06/Backend-API-Development-Authentication-System-Challenge/issues"
+  },
+  "homepage": "https://github.com/DevaP06/Backend-API-Development-Authentication-System-Challenge#readme",
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cloudinary": "^2.7.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.1",
+    "express": "^5.1.0",
+    "express-async-handler": "^1.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.18.0",
+    "mongoose-aggregate-paginate-v2": "^1.1.4",
+    "multer": "^2.0.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2"
+  }
+}
