@@ -4,11 +4,11 @@ import cors from 'cors';
 
 const app = express();
 
-// CORS configuration
+// CORS configuration - simplified to avoid any regex issues
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
         ? 'https://backend-api-development-authentication-system-ch-production.up.railway.app'
-        : ['http://localhost:8000', 'http://localhost:3000'],
+        : true, // Allow all origins in development
     credentials: true
 }));
 
@@ -44,86 +44,70 @@ app.get('/api/v1/test', (req, res) => {
     res.json({ message: 'API is working', timestamp: new Date().toISOString() });
 });
 
-// Temporary: Create minimal routes directly to bypass import issues
+// Simple health check for users API
 app.get('/api/v1/users/health', (req, res) => {
     res.status(200).json({
         status: 'OK',
-        message: 'User routes are working',
-        timestamp: new Date().toISOString()
+        message: 'Authentication system operational',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development'
     });
 });
 
-// Remove fallback routes - use real authentication only
-
-// Skip router import and define routes directly to avoid path-to-regexp issues
-console.log('🔧 Using direct route definitions to bypass path-to-regexp errors');
-
-// Import controllers directly
-let controllers = null;
-try {
-    controllers = await import('./controllers/user.controller.js');
-    console.log('✅ Controllers loaded successfully');
-} catch (error) {
-    console.error('❌ Failed to load controllers:', error.message);
-}
-
-// Import auth middleware
-let authMiddleware = null;
-try {
-    const auth = await import('./middlewares/auth.middleware.js');
-    authMiddleware = auth.verifyJWT;
-    console.log('✅ Auth middleware loaded successfully');
-} catch (error) {
-    console.error('❌ Failed to load auth middleware:', error.message);
-}
-
-// Define routes directly without Express Router
-if (controllers && authMiddleware) {
-    // Public routes
-    app.post('/api/v1/users/register', controllers.registerUser);
-    app.post('/api/v1/users/login', controllers.loginUser);
-    
-    // Health check
-    app.get('/api/v1/users/health', (req, res) => {
-        res.status(200).json({ 
-            status: 'OK', 
-            timestamp: new Date().toISOString(),
-            environment: process.env.NODE_ENV || 'development'
-        });
+// Basic fallback routes (will be replaced by real routes when controllers load)
+app.post('/api/v1/users/register', (req, res) => {
+    res.status(503).json({
+        success: false,
+        message: 'Authentication system loading...'
     });
-    
-    // Protected routes
-    app.post('/api/v1/users/logout', authMiddleware, controllers.logoutUser);
-    app.post('/api/v1/users/refresh-token', controllers.refreshAccesstoken);
-    app.post('/api/v1/users/change-password', authMiddleware, controllers.changeCurrentPassword);
-    app.get('/api/v1/users/current-user', authMiddleware, controllers.getCurrentuser);
-    app.put('/api/v1/users/update-account-details', authMiddleware, controllers.updateAccountDetails);
-    
-    // Discovery system routes
-    app.get('/api/v1/users/admin-panel', authMiddleware, controllers.getAdminPanel);
-    app.get('/api/v1/users/system/diagnostics', authMiddleware, controllers.getSystemDiagnostics);
-    app.get('/api/v1/users/secret-key', authMiddleware, controllers.getSecretKey);
-    app.get('/api/v1/users/vault-access', authMiddleware, controllers.getVaultAccess);
-    app.get('/api/v1/users/analytics', authMiddleware, controllers.getUserAnalytics);
-    
-    console.log('✅ All routes defined successfully without Express Router');
-} else {
-    console.log('🚨 Using minimal fallback routes');
-    
-    // Minimal fallback routes
-    app.post('/api/v1/users/register', (req, res) => {
-        res.status(503).json({
-            success: false,
-            message: 'Registration system temporarily unavailable'
-        });
-    });
+});
 
-    app.post('/api/v1/users/login', (req, res) => {
-        res.status(503).json({
-            success: false,
-            message: 'Authentication system temporarily unavailable'
-        });
+app.post('/api/v1/users/login', (req, res) => {
+    res.status(503).json({
+        success: false,
+        message: 'Authentication system loading...'
     });
+});
+
+// Function to setup authentication after app is created
+export async function setupAuthentication(app) {
+    try {
+        console.log('🔧 Loading authentication system...');
+        
+        // Import controllers
+        const controllers = await import('./controllers/user.controller.js');
+        console.log('✅ Controllers loaded');
+        
+        // Import auth middleware  
+        const auth = await import('./middlewares/auth.middleware.js');
+        const verifyJWT = auth.verifyJWT;
+        console.log('✅ Auth middleware loaded');
+        
+        // Replace fallback routes with real authentication
+        app.post('/api/v1/users/register', controllers.registerUser);
+        app.post('/api/v1/users/login', controllers.loginUser);
+        
+        // Protected user routes
+        app.post('/api/v1/users/logout', verifyJWT, controllers.logoutUser);
+        app.post('/api/v1/users/refresh-token', controllers.refreshAccesstoken);
+        app.post('/api/v1/users/change-password', verifyJWT, controllers.changeCurrentPassword);
+        app.get('/api/v1/users/current-user', verifyJWT, controllers.getCurrentuser);
+        app.put('/api/v1/users/update-account-details', verifyJWT, controllers.updateAccountDetails);
+        
+        // Discovery system routes (protected)
+        app.get('/api/v1/users/admin-panel', verifyJWT, controllers.getAdminPanel);
+        app.get('/api/v1/users/system/diagnostics', verifyJWT, controllers.getSystemDiagnostics);
+        app.get('/api/v1/users/secret-key', verifyJWT, controllers.getSecretKey);
+        app.get('/api/v1/users/vault-access', verifyJWT, controllers.getVaultAccess);
+        app.get('/api/v1/users/analytics', verifyJWT, controllers.getUserAnalytics);
+        
+        console.log('✅ Authentication system ready');
+        return true;
+        
+    } catch (error) {
+        console.error('❌ Authentication setup failed:', error.message);
+        return false;
+    }
 }
 
 

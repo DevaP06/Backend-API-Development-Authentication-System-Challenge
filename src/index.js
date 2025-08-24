@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import connectDB from "./db/index.js";
-import { app } from './app.js'
+import { app, setupAuthentication } from './app.js'
 
 // Load environment variables
 const result = dotenv.config({
@@ -18,9 +18,12 @@ console.log("URI_KEY loaded:", Boolean(process.env.URI_KEY));
 // Start server regardless of MongoDB connection status
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, () => {
+app.listen(PORT, async () => {
     console.log(`⚙️ Server is running at port: ${PORT}`);
     console.log(`🔗 Health check available at: http://localhost:${PORT}/health`);
+    
+    // Setup authentication after server starts
+    await setupAuthentication(app);
 });
 
 // Connect to MongoDB (non-blocking)
