@@ -55,110 +55,74 @@ app.get('/api/v1/users/health', (req, res) => {
 
 // Remove fallback routes - use real authentication only
 
-// Import and use real authentication routes with better error handling
+// Skip router import and define routes directly to avoid path-to-regexp issues
+console.log('🔧 Using direct route definitions to bypass path-to-regexp errors');
+
+// Import controllers directly
+let controllers = null;
 try {
-    console.log('Attempting to load user routes...');
-    
-    // Import routes in a safer way
-    const userRoutes = await import('./routes/user.routes.js');
-    const userRouter = userRoutes.default;
-    
-    // Test the router before using it
-    if (userRouter && typeof userRouter === 'function') {
-        app.use('/api/v1/users', userRouter);
-        console.log('✅ User routes loaded successfully');
-    } else {
-        throw new Error('Invalid router export');
-    }
+    controllers = await import('./controllers/user.controller.js');
+    console.log('✅ Controllers loaded successfully');
 } catch (error) {
-    console.error('❌ CRITICAL: Failed to load user routes:', error.message);
-    console.error('Full error:', error);
-    console.log('🚨 Using secure fallback authentication');
+    console.error('❌ Failed to load controllers:', error.message);
+}
+
+// Import auth middleware
+let authMiddleware = null;
+try {
+    const auth = await import('./middlewares/auth.middleware.js');
+    authMiddleware = auth.verifyJWT;
+    console.log('✅ Auth middleware loaded successfully');
+} catch (error) {
+    console.error('❌ Failed to load auth middleware:', error.message);
+}
+
+// Define routes directly without Express Router
+if (controllers && authMiddleware) {
+    // Public routes
+    app.post('/api/v1/users/register', controllers.registerUser);
+    app.post('/api/v1/users/login', controllers.loginUser);
     
-    // Secure fallback authentication that actually works
-    app.post('/api/v1/users/register', async (req, res) => {
-        try {
-            const { username, email, fullName, password } = req.body;
-            
-            if (!username || !email || !password) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'All fields are required'
-                });
-            }
-
-            // Try to import and use real registration
-            const { registerUser } = await import('./controllers/user.controller.js');
-            return await registerUser(req, res);
-        } catch (importError) {
-            console.error('Registration fallback failed:', importError.message);
-            res.status(503).json({
-                success: false,
-                message: 'Registration system temporarily unavailable',
-                error: 'Please try again later'
-            });
-        }
+    // Health check
+    app.get('/api/v1/users/health', (req, res) => {
+        res.status(200).json({ 
+            status: 'OK', 
+            timestamp: new Date().toISOString(),
+            environment: process.env.NODE_ENV || 'development'
+        });
+    });
+    
+    // Protected routes
+    app.post('/api/v1/users/logout', authMiddleware, controllers.logoutUser);
+    app.post('/api/v1/users/refresh-token', controllers.refreshAccesstoken);
+    app.post('/api/v1/users/change-password', authMiddleware, controllers.changeCurrentPassword);
+    app.get('/api/v1/users/current-user', authMiddleware, controllers.getCurrentuser);
+    app.put('/api/v1/users/update-account-details', authMiddleware, controllers.updateAccountDetails);
+    
+    // Discovery system routes
+    app.get('/api/v1/users/admin-panel', authMiddleware, controllers.getAdminPanel);
+    app.get('/api/v1/users/system/diagnostics', authMiddleware, controllers.getSystemDiagnostics);
+    app.get('/api/v1/users/secret-key', authMiddleware, controllers.getSecretKey);
+    app.get('/api/v1/users/vault-access', authMiddleware, controllers.getVaultAccess);
+    app.get('/api/v1/users/analytics', authMiddleware, controllers.getUserAnalytics);
+    
+    console.log('✅ All routes defined successfully without Express Router');
+} else {
+    console.log('🚨 Using minimal fallback routes');
+    
+    // Minimal fallback routes
+    app.post('/api/v1/users/register', (req, res) => {
+        res.status(503).json({
+            success: false,
+            message: 'Registration system temporarily unavailable'
+        });
     });
 
-    app.post('/api/v1/users/login', async (req, res) => {
-        try {
-            const { usernameOrEmail, password } = req.body;
-            
-            if (!usernameOrEmail || !password) {
-                return res.status(400).json({
-                    success: false,
-                    message: 'Username/email and password are required'
-                });
-            }
-
-            // Try to import and use real login
-            const { loginUser } = await import('./controllers/user.controller.js');
-            return await loginUser(req, res);
-        } catch (importError) {
-            console.error('Login fallback failed:', importError.message);
-            res.status(503).json({
-                success: false,
-                message: 'Authentication system temporarily unavailable',
-                error: 'Please try again later'
-            });
-        }
-    });
-
-    // Discovery endpoints fallback
-    app.get('/api/v1/users/admin-panel', async (req, res) => {
-        try {
-            const { getAdminPanel } = await import('./controllers/user.controller.js');
-            return await getAdminPanel(req, res);
-        } catch (error) {
-            res.status(503).json({
-                success: false,
-                message: 'Admin panel temporarily unavailable'
-            });
-        }
-    });
-
-    app.get('/api/v1/users/system/diagnostics', async (req, res) => {
-        try {
-            const { getSystemDiagnostics } = await import('./controllers/user.controller.js');
-            return await getSystemDiagnostics(req, res);
-        } catch (error) {
-            res.status(503).json({
-                success: false,
-                message: 'System diagnostics temporarily unavailable'
-            });
-        }
-    });
-
-    app.get('/api/v1/users/secret-key', async (req, res) => {
-        try {
-            const { getSecretKey } = await import('./controllers/user.controller.js');
-            return await getSecretKey(req, res);
-        } catch (error) {
-            res.status(503).json({
-                success: false,
-                message: 'Secret key access temporarily unavailable'
-            });
-        }
+    app.post('/api/v1/users/login', (req, res) => {
+        res.status(503).json({
+            success: false,
+            message: 'Authentication system temporarily unavailable'
+        });
     });
 }
 
