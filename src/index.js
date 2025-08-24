@@ -1,4 +1,5 @@
 import dotenv from "dotenv"
+import connectDB from "./db/index.js";
 import { app } from './app-minimal.js'
 
 // Load environment variables
@@ -22,6 +23,12 @@ app.listen(PORT, () => {
     console.log(`🔗 Health check available at: http://localhost:${PORT}/health`);
 });
 
-// MongoDB connection temporarily disabled to isolate route issues
-console.log("⚠️ Running in minimal mode - MongoDB connection disabled");
-console.log("🔧 Working to resolve path-to-regexp error in routes");
+// Connect to MongoDB (non-blocking)
+connectDB()
+    .then(() => {
+        console.log("✅ MongoDB connection successful - Enhanced functionality available");
+    })
+    .catch((err) => {
+        console.log("❌ MongoDB connection failed:", err.message);
+        console.log("⚠️ Server running with mock responses only");
+    });
