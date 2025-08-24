@@ -4,17 +4,20 @@ import cors from 'cors';
 
 const app = express();
 
+// Simple in-memory user storage for competition demo (resets on server restart)
+const registeredUsers = new Map();
+
 // CORS configuration
 app.use(cors({
-  origin: process.env.NODE_ENV === 'production' 
-    ? 'https://backend-api-development-authentication-system-ch-production.up.railway.app'
-    : ['http://localhost:8000', 'http://localhost:3000'],
-  credentials: true
+    origin: process.env.NODE_ENV === 'production'
+        ? 'https://backend-api-development-authentication-system-ch-production.up.railway.app'
+        : ['http://localhost:8000', 'http://localhost:3000'],
+    credentials: true
 }));
 
 // Middleware
-app.use(express.json({limit: '16kb'}));
-app.use(express.urlencoded({extended: true, limit: '16kb'}));
+app.use(express.json({ limit: '16kb' }));
+app.use(express.urlencoded({ extended: true, limit: '16kb' }));
 app.use(express.static('public'));
 app.use(cookieParser());
 
@@ -29,8 +32,8 @@ app.get('/health', (req, res) => {
 
 // API endpoints
 app.get('/api/v1/users/health', (req, res) => {
-    res.status(200).json({ 
-        status: 'OK', 
+    res.status(200).json({
+        status: 'OK',
         message: 'API is working',
         timestamp: new Date().toISOString()
     });
@@ -40,7 +43,7 @@ app.get('/api/v1/users/health', (req, res) => {
 app.post('/api/v1/users/register', async (req, res) => {
     try {
         const { username, email, fullName, password } = req.body;
-        
+
         if (!username || !email || !password) {
             return res.status(400).json({
                 success: false,
@@ -53,18 +56,46 @@ app.post('/api/v1/users/register', async (req, res) => {
             const { registerUser } = await import('./controllers/user.controller.js');
             return await registerUser(req, res);
         } catch (importError) {
-            console.log('Using fallback registration');
-            
-            // Fallback registration
+            console.log('Using secure fallback registration with validation');
+
+            const usernameKey = username.toLowerCase();
+            const emailKey = email.toLowerCase();
+
+            // Check if user already exists
+            if (registeredUsers.has(usernameKey) || registeredUsers.has(emailKey)) {
+                return res.status(409).json({
+                    success: false,
+                    message: 'User already exists with this username or email',
+                    hint: 'Try logging in instead or use different credentials'
+                });
+            }
+
+            // Create new user
+            const newUser = {
+                id: Date.now().toString(),
+                username: username.toLowerCase(),
+                email: email.toLowerCase(),
+                fullName: fullName || username,
+                password: password, // In real app, this would be hashed
+                createdAt: new Date().toISOString()
+            };
+
+            // Store user (both username and email as keys for lookup)
+            registeredUsers.set(usernameKey, newUser);
+            registeredUsers.set(emailKey, newUser);
+
+            console.log(`✅ User registered: ${username} (${email})`);
+            console.log(`📊 Total registered users: ${Math.ceil(registeredUsers.size / 2)}`);
+
             res.status(201).json({
                 success: true,
-                message: 'User registered successfully',
+                message: 'User registered successfully! You can now login.',
                 data: {
                     user: {
-                        _id: Date.now().toString(),
-                        username,
-                        email,
-                        fullName: fullName || username
+                        _id: newUser.id,
+                        username: newUser.username,
+                        email: newUser.email,
+                        fullName: newUser.fullName
                     }
                 }
             });
@@ -81,7 +112,7 @@ app.post('/api/v1/users/register', async (req, res) => {
 app.post('/api/v1/users/login', async (req, res) => {
     try {
         const { usernameOrEmail, password } = req.body;
-        
+
         if (!usernameOrEmail || !password) {
             return res.status(400).json({
                 success: false,
@@ -94,14 +125,36 @@ app.post('/api/v1/users/login', async (req, res) => {
             const { loginUser } = await import('./controllers/user.controller.js');
             return await loginUser(req, res);
         } catch (importError) {
-            console.log('Using fallback login');
-            
+            console.log('Using secure fallback login with validation');
+
+            // Check if user exists in our registered users
+            const identifier = usernameOrEmail.toLowerCase();
+            const user = registeredUsers.get(identifier);
+
+            if (!user) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'User not found. Please register first.',
+                    hint: 'Click the REGISTER tab to create an account'
+                });
+            }
+
+            // Validate password
+            if (user.password !== password) {
+                return res.status(401).json({
+                    success: false,
+                    message: 'Invalid password',
+                    hint: 'Please check your password and try again'
+                });
+            }
+
             // Generate a simple JWT-like token
             const mockToken = Buffer.from(JSON.stringify({
-                username: usernameOrEmail,
+                username: user.username,
+                email: user.email,
                 timestamp: Date.now()
             })).toString('base64');
-            
+
             // Set cookie for session
             res.cookie('accessToken', mockToken, {
                 httpOnly: true,
@@ -109,15 +162,16 @@ app.post('/api/v1/users/login', async (req, res) => {
                 sameSite: 'strict',
                 maxAge: 24 * 60 * 60 * 1000 // 24 hours
             });
-            
+
             res.status(200).json({
                 success: true,
                 message: 'Login successful',
                 data: {
                     user: {
-                        _id: Date.now().toString(),
-                        username: usernameOrEmail,
-                        email: `${usernameOrEmail}@example.com`
+                        _id: user.id,
+                        username: user.username,
+                        email: user.email,
+                        fullName: user.fullName
                     },
                     accessToken: mockToken
                 }
@@ -189,7 +243,7 @@ app.get('/api/v1/users/system/diagnostics', async (req, res) => {
             const currentHour = new Date().getHours();
             const username = req.headers.authorization ? 'user' : 'testuser'; // Mock username
             const dynamicCode = `${username.length}${currentHour}${mockUserId.slice(-2)}`;
-            
+
             res.status(200).json({
                 success: true,
                 message: 'System diagnostics completed - Security analysis available',
@@ -232,7 +286,7 @@ app.get('/api/v1/users/secret-key', async (req, res) => {
     try {
         // Check if access code is provided
         const { accessCode } = req.query;
-        
+
         if (!accessCode) {
             return res.status(403).json({
                 success: false,
@@ -240,7 +294,7 @@ app.get('/api/v1/users/secret-key', async (req, res) => {
                 hint: 'Complete system diagnostics first to get the access code'
             });
         }
-        
+
         // Try to use real secret key endpoint if available
         try {
             const { getSecretKey } = await import('./controllers/user.controller.js');
@@ -248,7 +302,7 @@ app.get('/api/v1/users/secret-key', async (req, res) => {
         } catch (importError) {
             // Enhanced secret key discovery with access code validation
             const secretKey = process.env.SECRET_KEY || 'CYBER-AUTH-DISCOVERY-KEY-2025';
-            
+
             res.status(200).json({
                 success: true,
                 message: '🎉 Congratulations! You\'ve successfully navigated the discovery process!',
@@ -257,7 +311,7 @@ app.get('/api/v1/users/secret-key', async (req, res) => {
                     achievement: "Master Investigator",
                     discoveryPath: [
                         "1. Investigated admin panel system logs",
-                        "2. Found hidden diagnostics endpoint", 
+                        "2. Found hidden diagnostics endpoint",
                         "3. Used maintenance code to access diagnostics",
                         "4. Discovered dynamic access pattern",
                         "5. Successfully accessed secret key"
