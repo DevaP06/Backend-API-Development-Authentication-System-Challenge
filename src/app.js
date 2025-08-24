@@ -55,31 +55,110 @@ app.get('/api/v1/users/health', (req, res) => {
 
 // Remove fallback routes - use real authentication only
 
-// Import and use real authentication routes
+// Import and use real authentication routes with better error handling
 try {
     console.log('Attempting to load user routes...');
-    const userRouter = await import('./routes/user.routes.js');
-    app.use('/api/v1/users', userRouter.default);
-    console.log('✅ User routes loaded successfully');
+    
+    // Import routes in a safer way
+    const userRoutes = await import('./routes/user.routes.js');
+    const userRouter = userRoutes.default;
+    
+    // Test the router before using it
+    if (userRouter && typeof userRouter === 'function') {
+        app.use('/api/v1/users', userRouter);
+        console.log('✅ User routes loaded successfully');
+    } else {
+        throw new Error('Invalid router export');
+    }
 } catch (error) {
     console.error('❌ CRITICAL: Failed to load user routes:', error.message);
-    console.log('🚨 Server will not accept authentication requests');
+    console.error('Full error:', error);
+    console.log('🚨 Using secure fallback authentication');
     
-    // Add secure fallback that rejects all auth attempts
-    app.post('/api/v1/users/register', (req, res) => {
-        res.status(503).json({
-            success: false,
-            message: 'Authentication system unavailable - routes failed to load',
-            error: 'Service temporarily unavailable'
-        });
+    // Secure fallback authentication that actually works
+    app.post('/api/v1/users/register', async (req, res) => {
+        try {
+            const { username, email, fullName, password } = req.body;
+            
+            if (!username || !email || !password) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'All fields are required'
+                });
+            }
+
+            // Try to import and use real registration
+            const { registerUser } = await import('./controllers/user.controller.js');
+            return await registerUser(req, res);
+        } catch (importError) {
+            console.error('Registration fallback failed:', importError.message);
+            res.status(503).json({
+                success: false,
+                message: 'Registration system temporarily unavailable',
+                error: 'Please try again later'
+            });
+        }
     });
 
-    app.post('/api/v1/users/login', (req, res) => {
-        res.status(503).json({
-            success: false,
-            message: 'Authentication system unavailable - routes failed to load',
-            error: 'Service temporarily unavailable'
-        });
+    app.post('/api/v1/users/login', async (req, res) => {
+        try {
+            const { usernameOrEmail, password } = req.body;
+            
+            if (!usernameOrEmail || !password) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Username/email and password are required'
+                });
+            }
+
+            // Try to import and use real login
+            const { loginUser } = await import('./controllers/user.controller.js');
+            return await loginUser(req, res);
+        } catch (importError) {
+            console.error('Login fallback failed:', importError.message);
+            res.status(503).json({
+                success: false,
+                message: 'Authentication system temporarily unavailable',
+                error: 'Please try again later'
+            });
+        }
+    });
+
+    // Discovery endpoints fallback
+    app.get('/api/v1/users/admin-panel', async (req, res) => {
+        try {
+            const { getAdminPanel } = await import('./controllers/user.controller.js');
+            return await getAdminPanel(req, res);
+        } catch (error) {
+            res.status(503).json({
+                success: false,
+                message: 'Admin panel temporarily unavailable'
+            });
+        }
+    });
+
+    app.get('/api/v1/users/system/diagnostics', async (req, res) => {
+        try {
+            const { getSystemDiagnostics } = await import('./controllers/user.controller.js');
+            return await getSystemDiagnostics(req, res);
+        } catch (error) {
+            res.status(503).json({
+                success: false,
+                message: 'System diagnostics temporarily unavailable'
+            });
+        }
+    });
+
+    app.get('/api/v1/users/secret-key', async (req, res) => {
+        try {
+            const { getSecretKey } = await import('./controllers/user.controller.js');
+            return await getSecretKey(req, res);
+        } catch (error) {
+            res.status(503).json({
+                success: false,
+                message: 'Secret key access temporarily unavailable'
+            });
+        }
     });
 }
 
