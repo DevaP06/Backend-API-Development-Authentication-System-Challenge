@@ -240,30 +240,105 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
 
 
 
-const getSecretKey = asyncHandler(async (req, res) => {
-    // This endpoint is only accessible to authenticated users
-    // The verifyJWT middleware ensures the user is authenticated
+// STEP 2: System diagnostics - requires maintenance code from admin panel
+const getSystemDiagnostics = asyncHandler(async (req, res) => {
+    const { maintenanceCode } = req.query;
+    
+    if (!maintenanceCode || maintenanceCode !== "DIAG_7834") {
+        return res.status(403).json(
+            new APIResponse(403, "Access denied", {
+                message: "Valid maintenance code required",
+                hint: "Check system logs for the current maintenance code"
+            })
+        );
+    }
 
-    const secretKey = process.env.SECRET_KEY || "your-super-secret-key-12345";
-
-    const responseData = {
-        message: "Access granted to authenticated user",
-        secretKey: secretKey,
-        user: {
-            id: req.user._id,
-            username: req.user.username,
-            email: req.user.email
+    // Generate time-sensitive access pattern
+    const currentHour = new Date().getHours();
+    const accessPattern = `${req.user.username.length}${currentHour}${req.user._id.toString().slice(-2)}`;
+    
+    const diagnosticsData = {
+        message: "System diagnostics accessed successfully",
+        systemHealth: {
+            cpu: "Normal",
+            memory: "Optimal", 
+            disk: "Good",
+            network: "Stable"
+        },
+        securityStatus: {
+            firewall: "Active",
+            encryption: "AES-256",
+            lastScan: "2024-01-20T14:22:00Z"
+        },
+        // Hidden clue for final step
+        internalNotes: {
+            reminder: "Secret vault requires special access pattern",
+            pattern: accessPattern, // CLUE 3: Dynamic pattern for final step
+            instruction: "Use this pattern as 'accessCode' parameter in vault endpoint"
         },
         timestamp: new Date().toISOString()
     };
 
     return res.status(200).json(
-        new APIResponse(200, "Secret key retrieved successfully", responseData)
+        new APIResponse(200, "Diagnostics retrieved successfully", diagnosticsData)
     );
 })
 
+// STEP 3: Final secret key access - requires access pattern from diagnostics
+const getSecretKey = asyncHandler(async (req, res) => {
+    const { accessCode } = req.query;
+    
+    if (!accessCode) {
+        return res.status(400).json(
+            new APIResponse(400, "Access code required", {
+                message: "Special access code needed for secret key",
+                hint: "Run system diagnostics to obtain the current access code"
+            })
+        );
+    }
+
+    // Validate the dynamic access pattern
+    const currentHour = new Date().getHours();
+    const expectedPattern = `${req.user.username.length}${currentHour}${req.user._id.toString().slice(-2)}`;
+    
+    if (accessCode !== expectedPattern) {
+        return res.status(403).json(
+            new APIResponse(403, "Invalid access code", {
+                message: "Access code is incorrect or expired",
+                hint: "Access codes are time-sensitive and user-specific"
+            })
+        );
+    }
+
+    const secretKey = process.env.SECRET_KEY || "your-super-secret-key-12345";
+    
+    const responseData = {
+        message: "🎉 Congratulations! You've successfully navigated the discovery process!",
+        secretKey: secretKey,
+        achievement: "Master Investigator",
+        discoveryPath: [
+            "1. Investigated admin panel system logs",
+            "2. Found hidden diagnostics endpoint", 
+            "3. Used maintenance code to access diagnostics",
+            "4. Discovered dynamic access pattern",
+            "5. Successfully accessed secret key"
+        ],
+        user: {
+            id: req.user._id,
+            username: req.user.username,
+            email: req.user.email
+        },
+        unlockedAt: new Date().toISOString(),
+        specialMessage: "Your investigative skills have proven worthy of this secret!"
+    };
+
+    return res.status(200).json(
+        new APIResponse(200, "Secret key unlocked through discovery!", responseData)
+    );
+})
+
+// STEP 1: Hidden clue in admin panel - requires investigation
 const getAdminPanel = asyncHandler(async (req, res) => {
-    // Protected endpoint for admin-level information
     const adminData = {
         message: "Welcome to the Admin Panel",
         serverInfo: {
@@ -287,6 +362,13 @@ const getAdminPanel = asyncHandler(async (req, res) => {
             id: req.user._id,
             username: req.user.username,
             role: "authenticated_user"
+        },
+        // Hidden clue - only visible to those who investigate the response
+        systemLogs: {
+            lastMaintenance: "2024-01-15T10:30:00Z",
+            nextScheduled: "2024-02-15T02:00:00Z",
+            debugEndpoint: "/system/diagnostics", // CLUE 1: Hidden endpoint
+            maintenanceCode: "DIAG_7834" // CLUE 2: Code needed for next step
         },
         timestamp: new Date().toISOString()
     };
@@ -387,6 +469,7 @@ export {
     changeCurrentPassword,
     getCurrentuser,
     updateAccountDetails,
+    getSystemDiagnostics,
     getSecretKey,
     getAdminPanel,
     getVaultAccess,
