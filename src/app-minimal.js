@@ -140,7 +140,7 @@ app.get('/api/v1/users/admin-panel', async (req, res) => {
             const { getAdminPanel } = await import('./controllers/user.controller.js');
             return await getAdminPanel(req, res);
         } catch (importError) {
-            // Fallback admin panel
+            // Fallback admin panel with maintenance code
             res.status(200).json({
                 success: true,
                 message: 'Admin panel access granted - Enhanced system diagnostics available',
@@ -155,6 +155,12 @@ app.get('/api/v1/users/admin-panel', async (req, res) => {
                         userManagement: 'Available',
                         systemLogs: 'Accessible',
                         securitySettings: 'Configurable'
+                    },
+                    systemLogs: {
+                        lastMaintenance: new Date().toISOString(),
+                        nextScheduled: "2024-02-15T02:00:00Z",
+                        debugEndpoint: "/system/diagnostics", // CLUE 1: Hidden endpoint
+                        maintenanceCode: "DIAG_7834" // CLUE 2: Code needed for next step
                     },
                     nextStep: 'Try system diagnostics for more detailed information',
                     hint: 'Look for patterns in the diagnostic data...'

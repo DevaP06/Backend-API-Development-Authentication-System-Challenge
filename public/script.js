@@ -193,6 +193,13 @@ async function accessAdminPanel() {
                         addOutput(`🔍 ${key.toUpperCase()}:`, 'info');
                         Object.entries(value).forEach(([subKey, subValue]) => {
                             addOutput(`   └─ ${subKey}: ${subValue}`, 'info');
+                            
+                            // Store maintenance code for next step
+                            if (subKey === 'maintenanceCode') {
+                                localStorage.setItem('maintenanceCode', subValue);
+                                addOutput(`🔑 MAINTENANCE CODE STORED: ${subValue}`, 'success');
+                                addOutput('💡 You can now access System Diagnostics!', 'info');
+                            }
                         });
                     } else {
                         addOutput(`🔍 ${key.toUpperCase()}: ${value}`, 'info');
@@ -215,8 +222,18 @@ async function systemDiagnostics() {
     
     addOutput('🔄 RUNNING SYSTEM DIAGNOSTICS...', 'info');
     
+    // Check if we have maintenance code from admin panel
+    const maintenanceCode = localStorage.getItem('maintenanceCode');
+    if (!maintenanceCode) {
+        addOutput('⚠️ MAINTENANCE CODE REQUIRED', 'warning');
+        addOutput('💡 HINT: Access the Admin Panel first to get the maintenance code', 'info');
+        return;
+    }
+    
+    addOutput('🔑 Using maintenance code: ' + maintenanceCode, 'info');
+    
     try {
-        const response = await fetch(`${API_BASE}/system/diagnostics`, {
+        const response = await fetch(`${API_BASE}/system/diagnostics?maintenanceCode=${maintenanceCode}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,
             },
@@ -235,6 +252,13 @@ async function systemDiagnostics() {
                         addOutput(`⚙️ ${key.toUpperCase()}:`, 'warning');
                         Object.entries(value).forEach(([subKey, subValue]) => {
                             addOutput(`   └─ ${subKey}: ${subValue}`, 'info');
+                            
+                            // Store access code for secret key
+                            if (subKey === 'accessCode' || subKey === 'dynamicCode') {
+                                localStorage.setItem('accessCode', subValue);
+                                addOutput(`🎯 ACCESS CODE DISCOVERED: ${subValue}`, 'success');
+                                addOutput('🔓 You can now access the Secret Key!', 'info');
+                            }
                         });
                     } else {
                         addOutput(`⚙️ ${key.toUpperCase()}: ${value}`, 'warning');
@@ -257,8 +281,19 @@ async function getSecretKey() {
     
     addOutput('🔄 ATTEMPTING TO ACCESS SECRET KEY...', 'info');
     
+    // Check if we have access code from diagnostics
+    const accessCode = localStorage.getItem('accessCode');
+    if (!accessCode) {
+        addOutput('⚠️ ACCESS CODE REQUIRED', 'warning');
+        addOutput('💡 HINT: Complete System Diagnostics first to get the access code', 'info');
+        addOutput('📋 DISCOVERY PATH: Admin Panel → Diagnostics → Secret Key', 'info');
+        return;
+    }
+    
+    addOutput('🎯 Using access code: ' + accessCode, 'info');
+    
     try {
-        const response = await fetch(`${API_BASE}/secret-key`, {
+        const response = await fetch(`${API_BASE}/secret-key?accessCode=${accessCode}`, {
             headers: {
                 'Authorization': `Bearer ${authToken}`,
             },
@@ -389,10 +424,32 @@ function updateAuthStatus() {
     if (authToken && currentUser) {
         authStatusElement.textContent = `AUTHENTICATED AS ${currentUser.username.toUpperCase()}`;
         authStatusElement.style.color = 'var(--neon-green)';
+        updateDiscoveryProgress();
     } else {
         authStatusElement.textContent = 'AUTHENTICATION REQUIRED';
         authStatusElement.style.color = 'var(--magenta)';
     }
+}
+
+function updateDiscoveryProgress() {
+    const maintenanceCode = localStorage.getItem('maintenanceCode');
+    const accessCode = localStorage.getItem('accessCode');
+    
+    // Step 1: Admin Panel
+    if (maintenanceCode) {
+        document.getElementById('step-1').classList.add('completed');
+        document.getElementById('status-1').textContent = '✅';
+        document.getElementById('status-2').textContent = '⏳';
+    }
+    
+    // Step 2: Diagnostics
+    if (accessCode) {
+        document.getElementById('step-2').classList.add('completed');
+        document.getElementById('status-2').textContent = '✅';
+        document.getElementById('status-3').textContent = '⏳';
+    }
+    
+    // Step 3: Secret Key (will be updated when accessed)
 }
 
 // Logout function
