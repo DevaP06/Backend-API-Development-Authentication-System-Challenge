@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import connectDB from "./db/index.js";
-import { app, setupAuthentication } from './app.js'
+import { app } from './app-minimal.js'
 
 // Load environment variables
 const result = dotenv.config({
@@ -18,12 +18,10 @@ console.log("URI_KEY loaded:", Boolean(process.env.URI_KEY));
 // Start server regardless of MongoDB connection status
 const PORT = process.env.PORT || 8000;
 
-app.listen(PORT, async () => {
+app.listen(PORT, () => {
     console.log(`⚙️ Server is running at port: ${PORT}`);
     console.log(`🔗 Health check available at: http://localhost:${PORT}/health`);
-    
-    // Setup authentication after server starts
-    await setupAuthentication(app);
+    console.log(`🏆 GDG Competition version ready!`);
 });
 
 // Connect to MongoDB (non-blocking)
