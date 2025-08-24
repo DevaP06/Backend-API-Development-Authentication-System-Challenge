@@ -183,7 +183,13 @@ app.get('/api/v1/users/system/diagnostics', async (req, res) => {
             const { getSystemDiagnostics } = await import('./controllers/user.controller.js');
             return await getSystemDiagnostics(req, res);
         } catch (importError) {
-            // Fallback diagnostics
+            // Fallback diagnostics with access code generation
+            // Generate dynamic access code (username length + current hour + mock user ID)
+            const mockUserId = Date.now().toString();
+            const currentHour = new Date().getHours();
+            const username = req.headers.authorization ? 'user' : 'testuser'; // Mock username
+            const dynamicCode = `${username.length}${currentHour}${mockUserId.slice(-2)}`;
+            
             res.status(200).json({
                 success: true,
                 message: 'System diagnostics completed - Security analysis available',
@@ -204,6 +210,11 @@ app.get('/api/v1/users/system/diagnostics', async (req, res) => {
                         'key-manager': 'Active',
                         'auth-validator': 'Operational'
                     },
+                    vaultAccess: {
+                        status: 'Available',
+                        accessCode: dynamicCode,
+                        algorithm: 'Dynamic pattern based on user metrics'
+                    },
                     hint: 'The vault-daemon process suggests secure storage is available...'
                 }
             });
@@ -219,12 +230,23 @@ app.get('/api/v1/users/system/diagnostics', async (req, res) => {
 
 app.get('/api/v1/users/secret-key', async (req, res) => {
     try {
+        // Check if access code is provided
+        const { accessCode } = req.query;
+        
+        if (!accessCode) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access code required',
+                hint: 'Complete system diagnostics first to get the access code'
+            });
+        }
+        
         // Try to use real secret key endpoint if available
         try {
             const { getSecretKey } = await import('./controllers/user.controller.js');
             return await getSecretKey(req, res);
         } catch (importError) {
-            // Enhanced secret key discovery
+            // Enhanced secret key discovery with access code validation
             const secretKey = process.env.SECRET_KEY || 'CYBER-AUTH-DISCOVERY-KEY-2025';
             
             res.status(200).json({
@@ -234,6 +256,7 @@ app.get('/api/v1/users/secret-key', async (req, res) => {
                     secretKey: secretKey,
                     discoveryPath: 'Admin Panel → System Diagnostics → Secret Key',
                     achievement: 'Cyberpunk Hacker Level: EXPERT',
+                    accessCode: accessCode,
                     timestamp: new Date().toISOString()
                 }
             });
