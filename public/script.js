@@ -3,6 +3,10 @@ const API_BASE = window.location.origin + '/api/v1/users';
 let authToken = localStorage.getItem('authToken');
 let currentUser = null;
 
+// Debug logging
+console.log('API_BASE:', API_BASE);
+console.log('Current origin:', window.location.origin);
+
 // Initialize terminal
 document.addEventListener('DOMContentLoaded', function() {
     updateConnectionStatus();
@@ -25,6 +29,23 @@ function displayWelcomeMessage() {
     addOutput('⚡ SYSTEM STATUS: ONLINE', 'info');
     addOutput('🎯 MISSION: DISCOVER THE SECRET KEY', 'warning');
     addOutput('💡 TIP: Register or login to begin your journey...', 'info');
+    
+    // Test API connectivity
+    testAPIConnection();
+}
+
+async function testAPIConnection() {
+    try {
+        const response = await fetch('/api/v1/test');
+        if (response.ok) {
+            const data = await response.json();
+            addOutput('✅ API CONNECTION: ESTABLISHED', 'success');
+        } else {
+            addOutput('⚠️ API CONNECTION: ISSUES DETECTED', 'warning');
+        }
+    } catch (error) {
+        addOutput('❌ API CONNECTION: FAILED - ' + error.message, 'error');
+    }
 }
 
 // Tab Management
@@ -50,6 +71,7 @@ async function handleLogin(e) {
     const password = document.getElementById('login-password').value;
     
     addOutput('🔄 AUTHENTICATING USER: ' + username, 'info');
+    addOutput('🔗 API ENDPOINT: ' + `${API_BASE}/login`, 'info');
     
     try {
         const response = await fetch(`${API_BASE}/login`, {
@@ -60,6 +82,17 @@ async function handleLogin(e) {
             body: JSON.stringify({ username, password }),
             credentials: 'include'
         });
+        
+        addOutput('📡 RESPONSE STATUS: ' + response.status, 'info');
+        
+        // Check if response is JSON
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            const text = await response.text();
+            addOutput('❌ INVALID RESPONSE FORMAT (Expected JSON, got HTML/Text)', 'error');
+            addOutput('📄 RESPONSE: ' + text.substring(0, 200) + '...', 'error');
+            return;
+        }
         
         const data = await response.json();
         
