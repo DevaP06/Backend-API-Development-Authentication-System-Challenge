@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import connectDB from "./db/index.js";
-import { app } from './app-minimal.js'
+import { app } from './app.js'
 
 // Load environment variables
 const result = dotenv.config({

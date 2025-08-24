@@ -22,7 +22,7 @@
 **🎯 A cyberpunk-themed, gamified authentication system with a 3-step discovery challenge**
 
 [![🚀 Live Demo](https://img.shields.io/badge/🚀_Live_Demo-Try_Now-ff00ff?style=for-the-badge&logo=railway)](https://backend-api-development-authentication-system-ch-production.up.railway.app)
-[![🏆 Competition](https://img.shields.io/badge/🏆_GDG_Competition-Winner_Selection-gold?style=for-the-badge&logo=google)](https://gdg.community.dev/)
+
 [![Node.js](https://img.shields.io/badge/Node.js-18+-00ff41?style=for-the-badge&logo=node.js&logoColor=black)](https://nodejs.org/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-00ff41?style=for-the-badge&logo=mongodb&logoColor=black)](https://mongodb.com/)
 [![Express.js](https://img.shields.io/badge/Express.js-4.x-00ffff?style=for-the-badge&logo=express&logoColor=black)](https://expressjs.com/)

@@ -53,31 +53,34 @@ app.get('/api/v1/users/health', (req, res) => {
     });
 });
 
-app.post('/api/v1/users/register', (req, res) => {
-    res.status(200).json({
-        success: false,
-        message: 'Registration temporarily disabled - fixing route issues',
-        hint: 'Server is running, working on full functionality'
-    });
-});
+// Remove fallback routes - use real authentication only
 
-app.post('/api/v1/users/login', (req, res) => {
-    res.status(200).json({
-        success: false,
-        message: 'Login temporarily disabled - fixing route issues',
-        hint: 'Server is running, working on full functionality'
-    });
-});
-
-// Try to import routes safely
+// Import and use real authentication routes
 try {
     console.log('Attempting to load user routes...');
     const userRouter = await import('./routes/user.routes.js');
-    app.use('/api/v1/users-full', userRouter.default);
+    app.use('/api/v1/users', userRouter.default);
     console.log('✅ User routes loaded successfully');
 } catch (error) {
-    console.error('❌ Failed to load user routes:', error.message);
-    console.log('⚠️ Using minimal fallback routes');
+    console.error('❌ CRITICAL: Failed to load user routes:', error.message);
+    console.log('🚨 Server will not accept authentication requests');
+    
+    // Add secure fallback that rejects all auth attempts
+    app.post('/api/v1/users/register', (req, res) => {
+        res.status(503).json({
+            success: false,
+            message: 'Authentication system unavailable - routes failed to load',
+            error: 'Service temporarily unavailable'
+        });
+    });
+
+    app.post('/api/v1/users/login', (req, res) => {
+        res.status(503).json({
+            success: false,
+            message: 'Authentication system unavailable - routes failed to load',
+            error: 'Service temporarily unavailable'
+        });
+    });
 }
 
 
