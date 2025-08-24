@@ -5,7 +5,10 @@ import cors from'cors';
 
 const app=express();
 app.use(cors({
-  origin: '*'
+  origin: process.env.NODE_ENV === 'production' 
+    ? ['https://backend-api-development-authentication-system-ch-production.up.railway.app']
+    : ['http://localhost:8000', 'http://localhost:3000'],
+  credentials: true
 }));
 
 
@@ -31,8 +34,13 @@ app.get('/health', (req, res) => {
     });
 });
 
-// Root endpoint
+// Root endpoint - serve the cyberpunk terminal interface
 app.get('/', (req, res) => {
+    res.sendFile('index.html', { root: 'public' });
+});
+
+// API info endpoint
+app.get('/api', (req, res) => {
     res.status(200).json({
         message: '🔐 Authentication Discovery System API',
         version: '1.0.0',

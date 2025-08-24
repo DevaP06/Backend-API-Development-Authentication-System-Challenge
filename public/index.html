@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔐 CYBER AUTH TERMINAL</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="scanlines"></div>
+    <div class="crt-overlay"></div>
+    
+    <div class="terminal-container">
+        <div class="terminal-header">
+            <div class="terminal-title glitch" data-text="CYBER AUTH TERMINAL v2.0">
+                CYBER AUTH TERMINAL v2.0
+            </div>
+            <div class="terminal-status">
+                <span class="status-dot"></span>
+                <span id="connection-status">CONNECTING...</span>
+            </div>
+        </div>
+
+        <div class="terminal-content">
+            <div class="ascii-art">
+                <pre>
+   ██████╗██╗   ██╗██████╗ ███████╗██████╗ 
+  ██╔════╝╚██╗ ██╔╝██╔══██╗██╔════╝██╔══██╗
+  ██║      ╚████╔╝ ██████╔╝█████╗  ██████╔╝
+  ██║       ╚██╔╝  ██╔══██╗██╔══╝  ██╔══██╗
+  ╚██████╗   ██║   ██████╔╝███████╗██║  ██║
+   ╚═════╝   ╚═╝   ╚═════╝ ╚══════╝╚═╝  ╚═╝
+                                            
+      ██████╗ ██╗   ██╗████████╗██╗  ██╗    
+     ██╔═══██╗██║   ██║╚══██╔══╝██║  ██║    
+     ██║   ██║██║   ██║   ██║   ███████║    
+     ██║   ██║██║   ██║   ██║   ██╔══██║    
+     ╚██████╔╝╚██████╔╝   ██║   ██║  ██║    
+      ╚═════╝  ╚═════╝    ╚═╝   ╚═╝  ╚═╝    
+                </pre>
+            </div>
+
+            <div class="auth-section">
+                <div class="tab-container">
+                    <button class="tab-btn active" onclick="showTab('login')">LOGIN</button>
+                    <button class="tab-btn" onclick="showTab('register')">REGISTER</button>
+                    <button class="tab-btn" onclick="showTab('discovery')">DISCOVERY</button>
+                </div>
+
+                <!-- Login Tab -->
+                <div id="login-tab" class="tab-content active">
+                    <h3 class="glitch" data-text="ACCESS TERMINAL">ACCESS TERMINAL</h3>
+                    <form id="login-form">
+                        <div class="input-group">
+                            <label>USERNAME:</label>
+                            <input type="text" id="login-username" placeholder="Enter username..." required>
+                        </div>
+                        <div class="input-group">
+                            <label>PASSWORD:</label>
+                            <input type="password" id="login-password" placeholder="Enter password..." required>
+                        </div>
+                        <button type="submit" class="cyber-btn">AUTHENTICATE</button>
+                    </form>
+                </div>
+
+                <!-- Register Tab -->
+                <div id="register-tab" class="tab-content">
+                    <h3 class="glitch" data-text="CREATE ACCESS">CREATE ACCESS</h3>
+                    <form id="register-form">
+                        <div class="input-group">
+                            <label>USERNAME:</label>
+                            <input type="text" id="reg-username" placeholder="Choose username..." required>
+                        </div>
+                        <div class="input-group">
+                            <label>EMAIL:</label>
+                            <input type="email" id="reg-email" placeholder="Enter email..." required>
+                        </div>
+                        <div class="input-group">
+                            <label>FULL NAME:</label>
+                            <input type="text" id="reg-fullname" placeholder="Enter full name..." required>
+                        </div>
+                        <div class="input-group">
+                            <label>PASSWORD:</label>
+                            <input type="password" id="reg-password" placeholder="Create password..." required>
+                        </div>
+                        <button type="submit" class="cyber-btn">REGISTER</button>
+                    </form>
+                </div>
+
+                <!-- Discovery Tab -->
+                <div id="discovery-tab" class="tab-content">
+                    <h3 class="glitch" data-text="SECRET DISCOVERY">SECRET DISCOVERY</h3>
+                    <div class="discovery-info">
+                        <p>🔍 MISSION: Discover the hidden secret key</p>
+                        <p>⚡ STATUS: <span id="auth-status">AUTHENTICATION REQUIRED</span></p>
+                        <p>🎯 HINT: Start with the admin panel...</p>
+                    </div>
+                    <div class="discovery-buttons">
+                        <button class="cyber-btn" onclick="accessAdminPanel()">ADMIN PANEL</button>
+                        <button class="cyber-btn" onclick="systemDiagnostics()">DIAGNOSTICS</button>
+                        <button class="cyber-btn" onclick="getSecretKey()">SECRET KEY</button>
+                        <button class="cyber-btn" onclick="vaultAccess()">VAULT ACCESS</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="output-section">
+                <div class="output-header">
+                    <span class="glitch" data-text="SYSTEM OUTPUT">SYSTEM OUTPUT</span>
+                    <button class="clear-btn" onclick="clearOutput()">CLEAR</button>
+                </div>
+                <div id="output" class="output-content"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

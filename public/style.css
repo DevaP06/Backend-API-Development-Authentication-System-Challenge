@@ -1,0 +1,411 @@
+/* Cyberpunk Terminal Styles */
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+:root {
+    --neon-green: #00ff41;
+    --electric-blue: #0080ff;
+    --magenta: #ff0080;
+    --cyber-purple: #8000ff;
+    --dark-bg: #0a0a0a;
+    --terminal-bg: #111111;
+    --text-primary: #00ff41;
+    --text-secondary: #0080ff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Share Tech Mono', monospace;
+    background: var(--dark-bg);
+    color: var(--text-primary);
+    overflow-x: hidden;
+    position: relative;
+    min-height: 100vh;
+}
+
+/* CRT Effects */
+.scanlines {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        transparent 50%, 
+        rgba(0, 255, 65, 0.03) 50%
+    );
+    background-size: 100% 4px;
+    pointer-events: none;
+    z-index: 1000;
+    animation: scanlines 0.1s linear infinite;
+}
+
+.crt-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(
+        ellipse at center,
+        transparent 0%,
+        rgba(0, 0, 0, 0.3) 100%
+    );
+    pointer-events: none;
+    z-index: 999;
+}
+
+@keyframes scanlines {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(4px); }
+}
+
+/* Glitch Effect */
+.glitch {
+    position: relative;
+    color: var(--neon-green);
+    font-weight: bold;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    animation: glitch-1 0.5s infinite;
+    color: var(--magenta);
+    z-index: -1;
+}
+
+.glitch::after {
+    animation: glitch-2 0.5s infinite;
+    color: var(--electric-blue);
+    z-index: -2;
+}
+
+@keyframes glitch-1 {
+    0%, 14%, 15%, 49%, 50%, 99%, 100% {
+        transform: translate(0);
+    }
+    15%, 49% {
+        transform: translate(-2px, -1px);
+    }
+}
+
+@keyframes glitch-2 {
+    0%, 20%, 21%, 62%, 63%, 99%, 100% {
+        transform: translate(0);
+    }
+    21%, 62% {
+        transform: translate(2px, 1px);
+    }
+}
+
+/* Terminal Container */
+.terminal-container {
+    max-width: 1200px;
+    margin: 20px auto;
+    background: var(--terminal-bg);
+    border: 2px solid var(--neon-green);
+    border-radius: 10px;
+    box-shadow: 
+        0 0 20px var(--neon-green),
+        inset 0 0 20px rgba(0, 255, 65, 0.1);
+    animation: terminal-glow 2s ease-in-out infinite alternate;
+}
+
+@keyframes terminal-glow {
+    from { box-shadow: 0 0 20px var(--neon-green), inset 0 0 20px rgba(0, 255, 65, 0.1); }
+    to { box-shadow: 0 0 30px var(--neon-green), inset 0 0 30px rgba(0, 255, 65, 0.2); }
+}
+
+.terminal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    background: linear-gradient(90deg, var(--cyber-purple), var(--magenta));
+    border-radius: 8px 8px 0 0;
+}
+
+.terminal-title {
+    font-family: 'Orbitron', monospace;
+    font-size: 1.2em;
+    font-weight: 900;
+}
+
+.terminal-status {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+}
+
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--neon-green);
+    animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}
+
+/* Terminal Content */
+.terminal-content {
+    padding: 20px;
+}
+
+.ascii-art {
+    text-align: center;
+    color: var(--electric-blue);
+    font-size: 0.7em;
+    margin-bottom: 30px;
+    text-shadow: 0 0 10px var(--electric-blue);
+}
+
+/* Tabs */
+.tab-container {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.tab-btn {
+    background: transparent;
+    border: 2px solid var(--electric-blue);
+    color: var(--electric-blue);
+    padding: 10px 20px;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+}
+
+.tab-btn:hover {
+    background: var(--electric-blue);
+    color: var(--dark-bg);
+    box-shadow: 0 0 15px var(--electric-blue);
+}
+
+.tab-btn.active {
+    background: var(--neon-green);
+    border-color: var(--neon-green);
+    color: var(--dark-bg);
+    box-shadow: 0 0 15px var(--neon-green);
+}
+
+.tab-content {
+    display: none;
+    background: rgba(0, 255, 65, 0.05);
+    padding: 20px;
+    border: 1px solid var(--neon-green);
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.tab-content h3 {
+    font-family: 'Orbitron', monospace;
+    margin-bottom: 20px;
+    text-align: center;
+    font-size: 1.5em;
+}
+
+/* Forms */
+.input-group {
+    margin-bottom: 15px;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 5px;
+    color: var(--text-secondary);
+    font-weight: bold;
+}
+
+.input-group input {
+    width: 100%;
+    padding: 12px;
+    background: var(--dark-bg);
+    border: 2px solid var(--electric-blue);
+    color: var(--neon-green);
+    font-family: 'Share Tech Mono', monospace;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.input-group input:focus {
+    outline: none;
+    border-color: var(--neon-green);
+    box-shadow: 0 0 10px var(--neon-green);
+}
+
+.cyber-btn {
+    background: linear-gradient(45deg, var(--magenta), var(--cyber-purple));
+    border: none;
+    color: white;
+    padding: 12px 25px;
+    font-family: 'Orbitron', monospace;
+    font-weight: bold;
+    cursor: pointer;
+    border-radius: 5px;
+    text-transform: uppercase;
+    transition: all 0.3s ease;
+    margin: 5px;
+    position: relative;
+    overflow: hidden;
+}
+
+.cyber-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(255, 0, 128, 0.4);
+}
+
+.cyber-btn:active {
+    transform: translateY(0);
+}
+
+/* Discovery Section */
+.discovery-info {
+    margin-bottom: 20px;
+}
+
+.discovery-info p {
+    margin-bottom: 10px;
+    padding: 8px;
+    background: rgba(0, 128, 255, 0.1);
+    border-left: 3px solid var(--electric-blue);
+}
+
+.discovery-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+}
+
+/* Output Section */
+.output-section {
+    margin-top: 30px;
+}
+
+.output-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.clear-btn {
+    background: var(--magenta);
+    border: none;
+    color: white;
+    padding: 5px 15px;
+    font-family: 'Share Tech Mono', monospace;
+    cursor: pointer;
+    border-radius: 3px;
+    font-size: 0.8em;
+}
+
+.output-content {
+    background: var(--dark-bg);
+    border: 2px solid var(--cyber-purple);
+    border-radius: 5px;
+    padding: 15px;
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.9em;
+    line-height: 1.4;
+}
+
+.output-line {
+    margin-bottom: 8px;
+    padding: 5px;
+    border-radius: 3px;
+}
+
+.output-success {
+    color: var(--neon-green);
+    background: rgba(0, 255, 65, 0.1);
+    border-left: 3px solid var(--neon-green);
+}
+
+.output-error {
+    color: var(--magenta);
+    background: rgba(255, 0, 128, 0.1);
+    border-left: 3px solid var(--magenta);
+}
+
+.output-info {
+    color: var(--electric-blue);
+    background: rgba(0, 128, 255, 0.1);
+    border-left: 3px solid var(--electric-blue);
+}
+
+.output-warning {
+    color: #ffaa00;
+    background: rgba(255, 170, 0, 0.1);
+    border-left: 3px solid #ffaa00;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .terminal-container {
+        margin: 10px;
+        border-radius: 5px;
+    }
+    
+    .ascii-art {
+        font-size: 0.5em;
+    }
+    
+    .tab-container {
+        flex-wrap: wrap;
+    }
+    
+    .discovery-buttons {
+        grid-template-columns: 1fr;
+    }
+    
+    .terminal-header {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+    }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--neon-green);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--electric-blue);
+}
