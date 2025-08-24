@@ -272,8 +272,25 @@ async function getSecretKey() {
             addOutput('🔑 ' + data.message, 'success');
             
             if (data.data && data.data.secretKey) {
+                addOutput('', 'success');
+                addOutput('═══════════════════════════════════════', 'success');
                 addOutput('💎 SECRET KEY: ' + data.data.secretKey, 'success');
+                addOutput('═══════════════════════════════════════', 'success');
+                addOutput('', 'success');
                 addOutput('🏆 MISSION ACCOMPLISHED!', 'success');
+                addOutput('🎯 CYBERPUNK HACKER LEVEL: EXPERT', 'success');
+                
+                if (data.data.discoveryPath) {
+                    addOutput('🛤️ DISCOVERY PATH: ' + data.data.discoveryPath, 'info');
+                }
+                if (data.data.achievement) {
+                    addOutput('🏅 ' + data.data.achievement, 'success');
+                }
+                
+                // Celebration effect
+                setTimeout(() => {
+                    addOutput('🔥 CONGRATULATIONS! You have successfully infiltrated the system!', 'success');
+                }, 1000);
             }
         } else {
             addOutput('❌ ACCESS DENIED: ' + data.message, 'error');

@@ -298,6 +298,35 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 10px;
+    margin-bottom: 20px;
+}
+
+.discovery-guide {
+    background: rgba(0, 255, 65, 0.05);
+    border: 1px solid var(--neon-green);
+    border-radius: 5px;
+    padding: 15px;
+    margin-top: 20px;
+}
+
+.discovery-guide h4 {
+    color: var(--neon-green);
+    margin-bottom: 10px;
+    font-family: 'Orbitron', monospace;
+}
+
+.discovery-guide ol {
+    color: var(--text-secondary);
+    padding-left: 20px;
+}
+
+.discovery-guide li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}
+
+.discovery-guide strong {
+    color: var(--neon-green);
 }
 
 /* Output Section */
