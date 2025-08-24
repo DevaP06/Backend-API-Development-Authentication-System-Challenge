@@ -15,12 +15,20 @@ console.log("URI_KEY loaded:", Boolean(process.env.URI_KEY));
 
 
 
+// Start server regardless of MongoDB connection status
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+    console.log(`⚙️ Server is running at port: ${PORT}`);
+    console.log(`🔗 Health check available at: http://localhost:${PORT}/health`);
+});
+
+// Connect to MongoDB (non-blocking)
 connectDB()
     .then(() => {
-        app.listen(process.env.PORT || 8000, () => {
-            console.log(`⚙️ Server is running at port : ${process.env.PORT}`);
-        })
+        console.log("✅ MongoDB connection successful");
     })
     .catch((err) => {
-        console.log("MONGO db connection failed !!! ", err);
+        console.log("❌ MongoDB connection failed:", err.message);
+        console.log("⚠️ Server running without database connection");
     })

@@ -1,43 +1,56 @@
 import express from 'express';
-import mongoose from 'mongoose';
 import cookieParser from 'cookie-parser';
-import cors from'cors';
+import cors from 'cors';
 
-const app=express();
+const app = express();
+
+// CORS configuration
 app.use(cors({
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://backend-api-development-authentication-system-ch-production.up.railway.app']
+    ? 'https://backend-api-development-authentication-system-ch-production.up.railway.app'
     : ['http://localhost:8000', 'http://localhost:3000'],
   credentials: true
 }));
 
-
+// Middleware
 app.use(express.json({limit: '16kb'}));
 app.use(express.urlencoded({extended: true, limit: '16kb'}));
 app.use(express.static('public'));
 app.use(cookieParser());
 
-//routes import 
-import userRouter from './routes/user.routes.js'
+// Simple health check endpoint (Railway uses this)
+app.get('/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'Server is running',
+        timestamp: new Date().toISOString()
+    });
+});
 
-
-//routes declaration
-app.use('/api/v1/users', userRouter);
+// Detailed health endpoint
+app.get('/api/health', (req, res) => {
+    res.status(200).json({
+        status: 'OK',
+        message: 'Authentication Discovery System is running',
+        timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV || 'development',
+        port: process.env.PORT || 8000,
+        uptime: process.uptime()
+    });
+});
 
 // Debug endpoint
 app.get('/api/v1/test', (req, res) => {
     res.json({ message: 'API is working', timestamp: new Date().toISOString() });
 });
 
-// Health check endpoint for deployment monitoring
-app.get('/health', (req, res) => {
-    res.status(200).json({
-        status: 'OK',
-        message: 'Authentication Discovery System is running',
-        timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV || 'development'
-    });
-});
+// Import routes
+import userRouter from './routes/user.routes.js';
+
+// Use routes
+app.use('/api/v1/users', userRouter);
+
+
 
 // Root endpoint - serve the cyberpunk terminal interface
 app.get('/', (req, res) => {
