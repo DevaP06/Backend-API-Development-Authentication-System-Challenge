@@ -3,11 +3,22 @@ import { DB_NAME } from "../constants.js";
 
 const connectDB = async () => {
   try {
+    // Debug environment variables
+    console.log("🔍 Environment Debug:");
+    console.log("NODE_ENV:", process.env.NODE_ENV);
+    console.log("URI_KEY exists:", Boolean(process.env.URI_KEY));
+    console.log("URI_KEY length:", (process.env.URI_KEY || '').length);
+    console.log("All env keys:", Object.keys(process.env).filter(key => key.includes('URI') || key.includes('MONGO')));
+    
+    if (!process.env.URI_KEY) {
+      throw new Error("URI_KEY environment variable is not defined. Check your environment configuration.");
+    }
+    
     const conn = await mongoose.connect(process.env.URI_KEY);
-    console.log(`MongoDB Connected: ${conn.connection.host}`);
-    console.log(`Database: ${conn.connection.name}`);
+    console.log(`✅ MongoDB Connected: ${conn.connection.host}`);
+    console.log(`📊 Database: ${conn.connection.name}`);
   } catch (error) { 
-    console.log("MONGODB connection error", error);
+    console.log("❌ MONGODB connection error", error);
     process.exit(1);
     }
 }
