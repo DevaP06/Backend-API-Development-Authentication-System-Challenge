@@ -245,20 +245,42 @@ Authorization: Bearer <jwt-token>
 - **🌐 CORS Protection**: Configured for production domains
 - **🚫 Input Validation**: Sanitized user inputs
 
+## 🎥 **Live Demo Video**
+
+<div align="center">
+
+### 🚀 **Full System Demonstration**
+[![🎬 Watch Demo Video](https://img.shields.io/badge/🎬_Watch_Demo_Video-Google_Drive-4285F4?style=for-the-badge&logo=googledrive&logoColor=white)](https://drive.google.com/file/d/1BKvgdB6-wyjYRO-4pYeVPO9s58XyLZsG/view?usp=drive_link)
+
+*🎯 Complete walkthrough of the cyberpunk authentication discovery system*
+
+**📋 Demo Highlights:**
+- 🔐 **Registration & Login Flow** - Secure user authentication process
+- 🕵️ **3-Step Discovery Challenge** - Admin Panel → Diagnostics → Secret Key
+- 🎨 **Cyberpunk UI Experience** - Live neon terminal with glitch effects
+- ⚡ **Real-Time Interactions** - Dynamic system responses and feedback
+- 🏆 **Mission Completion** - Full secret key revelation process
+
+</div>
+
+---
+
 ## 🎨 Screenshots
 
 <div align="center">
 
 ### 🖥️ **Cyberpunk Terminal Interface**
-*Experience the retro-futuristic hacking simulation*
+![Cyberpunk Terminal UI](https://github.com/user-attachments/assets/f0a3afce-31cb-42d7-bb89-853b07195c44)
+*🔥 Experience the retro-futuristic hacking simulation with neon aesthetics*
 
-### 🔐 **Authentication Flow**
-*Seamless login and registration with JWT tokens*
+**✨ Features Showcased:**
+- 🎮 **Interactive Terminal Design** - Authentic cyberpunk aesthetics
+- ⚡ **Neon Glitch Effects** - Dynamic visual feedback
+- 🔐 **Tab-Based Navigation** - Login, Register, Discovery modes
+- 📊 **Real-Time Output** - Live system responses and progress tracking
+- 🎯 **Discovery Progress** - Visual step completion indicators
 
-### 🕵️ **Discovery System**
-*Navigate through the 3-step secret revelation process*
-
-</div>
+</div
 
 ## 🐛 Troubleshooting
 
